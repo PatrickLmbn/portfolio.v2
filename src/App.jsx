@@ -112,7 +112,10 @@ function App() {
   const onPointerUp = (event) => {
     if (dragStart.current === null) return
     const distance = dragStart.current - event.clientY
-    if (Math.abs(distance) > 12) updateTargetDepth(targetDepth.current - distance / 170)
+    if (Math.abs(distance) > 12) {
+      const direction = event.pointerType === 'touch' ? 1 : -1
+      updateTargetDepth(targetDepth.current + direction * distance / 170)
+    }
     dragStart.current = null
   }
 
@@ -143,7 +146,7 @@ function App() {
         </section>
 
         {portfolioData.projects.map((project, index) => <section className="layer projects-layer" style={layerStyle(depth, projectStartDepth + index)} aria-hidden={focusedDepth !== projectStartDepth + index} key={project.title}>
-          <div className="section-heading"><p className="eyebrow">02 / Recent works</p><h2>Things I&apos;ve <em>made.</em></h2><p>Product thinking, shipped into the real world.</p></div>
+          <div className="section-heading"><p className="eyebrow">02 / Recent works</p><h2>Projects I&apos;ve <em>worked</em> on.</h2><p>Product thinking, shipped into the real world.</p></div>
           <div className="project-card"><img src={project.image} alt="" /><div className="project-detail"><span className="project-count">{String(index + 1).padStart(2, '0')} / {String(portfolioData.projects.length).padStart(2, '0')}</span><h3>{project.title}</h3><p>{project.description}</p><div className="tag-row">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></div>
         </section>)}
 

@@ -27,6 +27,7 @@ button { color: inherit; }
  .profile-layer .interaction-hint.is-hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 @media (max-width: 700px) { .profile-layer { display: grid; grid-template-columns: minmax(0, 1fr) 96px; align-items: start; gap: 16px; }.profile-copy { grid-column: 1; grid-row: 1; min-width: 0; }.profile-image { grid-column: 2; grid-row: 1; width: 96px; margin-top: 36px; border: 1px solid rgba(240, 179, 93, 0.9); background: transparent; box-shadow: 12px 16px 0 rgba(240, 179, 93, 0.12); } }
 @media (max-width: 700px) { .skill-group h3 { font-size: .72rem; line-height: 1.35; overflow-wrap: anywhere; } }
+@media (max-width: 700px) { .certificates-layer .section-heading h2 { white-space: normal; overflow: visible; text-overflow: clip; overflow-wrap: anywhere; font-size: clamp(1.6rem, 8vw, 2.5rem); line-height: 1; } }
 @media (prefers-reduced-motion: reduce) { .layer, .section-nav button, .progress-track div { transition: none; }.hint-arrow, .interaction-hint { animation: none; } }
 .project-card img { height: 100%; min-height: 275px; display: block; }
 @media (max-width: 700px) { .project-card img { height: 150px; min-height: 0; } }
