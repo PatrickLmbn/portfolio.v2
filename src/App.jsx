@@ -1,11 +1,24 @@
 import { useEffect, useRef, useState } from 'react'
-import { ExternalLink, Link, Mail, MouseLeft } from 'lucide-react'
+import { Award, BriefcaseBusiness, Download, Home, Link, Mail, MouseLeft, Wrench } from 'lucide-react'
 import profile from './assets/profiles/pfp.jpg'
+import cv from './assets/cv/Patrick C. Lambino.pdf'
 import armonyx from './assets/projects/armonyx.jpg'
 import buildx from './assets/projects/buildx.jpg'
 import irms from './assets/projects/irms.jpg'
 import oneshot from './assets/projects/oneshot.jpg'
 import prism from './assets/projects/prism.jpeg'
+import cyberSafetyCertificate from './assets/certificates/Certificate for Patrick C. Lambino for _QCU CyberSafety - Seminar_.pdf'
+import lambinoCertificate from './assets/certificates/Certificate of Lambino.pdf'
+import cybersecurityCertificate from './assets/certificates/Introduction_to_Cybersecurity_certificate_lambino-patrick-competente-gmail-com_954e0832-8472-4e96-97be-dfc9740b2000.pdf'
+import dataScienceCertificate from './assets/certificates/Introduction_to_Data_Science_certificate_lambino-patrick-competente-gmail-com_ff8be104-9385-4e19-990a-697e6676fc55.pdf'
+import modernAiCertificate from './assets/certificates/Introduction_to_Modern_AI_certificate_lambino-patrick-competente-gmail-com_2e7e8539-3dc4-4524-b500-33b2f535b18b.pdf'
+import networkingBasicsCertificate from './assets/certificates/Networking_Basics_certificate_lambino-patrick-competente-gmail-com_49c374ec-89e4-4e1a-8d3d-00e1bc67dae4.pdf'
+import cyberSafetyImage from './assets/certificates/qcu-cybersafety.png'
+import lambinoImage from './assets/certificates/lambino.png'
+import cybersecurityImage from './assets/certificates/cybersecurity.png'
+import dataScienceImage from './assets/certificates/data-science.png'
+import modernAiImage from './assets/certificates/modern-ai.png'
+import networkingBasicsImage from './assets/certificates/networking-basics.png'
 
 const portfolioData = {
   name: 'Patrick Lambino',
@@ -15,29 +28,40 @@ const portfolioData = {
   photo: profile,
   projects: [
     { title: 'Armonyxfitness', description: 'Gym management for registrations, attendance, and subscriptions across four branches.', image: armonyx, tags: ['PHP', 'CodeIgniter', 'MySQL', 'AWS'] },
-    { title: 'BuildXDesigner', description: 'A visual website builder with integrated data, email, and payment systems.', image: buildx, tags: ['React', 'Node.js', 'Supabase', 'OpenAI'] },
+    { title: 'BuildXDesigner', description: 'A visual website builder with integrated data, email, and payment systems.', image: buildx, tags: ['React', 'TypeScript', 'Node.js', 'AWS', 'Linux Server (Self-Hosted)', 'Vercel', 'Supabase', 'Paymongo', 'Resend', 'DuckDNS', 'OpenAI'] },
     { title: 'Issue Report Management System', description: 'Centralized ticketing that reduced issue resolution time by 40 percent.', image: irms, tags: ['PHP', 'JavaScript', 'Ably', 'AWS'] },
     { title: 'OneShot', description: 'A scheduling tool for photobooth businesses to manage bookings and coordination.', image: oneshot, tags: ['React', 'Express', 'Supabase', 'Paymongo'] },
     { title: 'Prism', description: 'A browser extension for clearer, more confident writing in real time.', image: prism, tags: ['JavaScript', 'OpenAI', 'Chrome API'] },
   ],
   skills: {
-    'Build': ['React', 'JavaScript', 'PHP', 'Node.js', 'CodeIgniter'],
-    'Connect': ['REST APIs', 'Supabase', 'MySQL', 'Ably', 'AWS'],
-    'Shape': ['Tailwind CSS', 'Bootstrap', 'Responsive UI', 'Figma'],
+    'Languages': ['PHP', 'JavaScript', 'SQL', 'CSS', 'HTML'],
+    'Frameworks & Libraries': ['Laravel', 'CodeIgniter', 'React', 'Node.js', 'Express', 'TailwindCSS'],
+    'Databases & Backend Services': ['MySQL', 'PostgreSQL', 'Supabase', 'REST API Development'],
+    'Tools & Platforms': ['Git', 'GitHub', 'Docker', 'AWS', 'Linux Server', 'Tailscale', 'Vercel', 'Cloudflare', 'Namecheap', 'DuckDNS'],
   },
   certificates: [
-    { name: 'Introduction to Modern AI', issuer: 'Cisco Networking Academy', date: '2024' },
-    { name: 'Introduction to Data Science', issuer: 'Cisco Networking Academy', date: '2024' },
-    { name: 'Networking Basics', issuer: 'Cisco Networking Academy', date: '2024' },
+    { name: 'Tech-Preneurship', issuer: 'Quezon City University', date: '2024', pdf: lambinoCertificate, image: lambinoImage },
+    { name: 'QCU CyberSafety Seminar', issuer: 'Quezon City University', date: '2025', pdf: cyberSafetyCertificate, image: cyberSafetyImage },
+    { name: 'Networking Basics', issuer: 'Cisco Networking Academy', date: '2026', pdf: networkingBasicsCertificate, image: networkingBasicsImage },
+    { name: 'Introduction to Data Science', issuer: 'Cisco Networking Academy', date: '2026', pdf: dataScienceCertificate, image: dataScienceImage },
+    { name: 'Introduction to Cybersecurity', issuer: 'Cisco Networking Academy', date: '2026', pdf: cybersecurityCertificate, image: cybersecurityImage },
+    { name: 'Introduction to Modern AI', issuer: 'Cisco Networking Academy', date: '2026', pdf: modernAiCertificate, image: modernAiImage },
   ],
   contact: { email: 'lambino.patrick.competente@gmail.com', github: 'https://github.com/PatrickLmbn', linkedin: 'https://www.linkedin.com/in/lambino-patrick-c-4213ba405/' },
 }
 
-const sections = ['Profile', ...portfolioData.projects.map((project) => project.title), 'Skills', 'Certificates', 'Contact']
+const sections = ['Profile', ...portfolioData.projects.map((project) => project.title), 'Skills & Tools', ...portfolioData.certificates.map((certificate) => certificate.name), 'Contact']
 const projectStartDepth = 1
 const skillsDepth = projectStartDepth + portfolioData.projects.length
-const certificatesDepth = skillsDepth + 1
-const contactDepth = certificatesDepth + 1
+const certificateStartDepth = skillsDepth + 1
+const contactDepth = certificateStartDepth + portfolioData.certificates.length
+const navSections = [
+  { label: 'Profile', start: 0, end: 0, icon: Home },
+  { label: 'Recent Works', start: projectStartDepth, end: skillsDepth - 1, icon: BriefcaseBusiness },
+  { label: 'Skills & Tools', start: skillsDepth, end: skillsDepth, icon: Wrench },
+  { label: 'Certificates', start: certificateStartDepth, end: contactDepth - 1, icon: Award },
+  { label: 'Contact', start: contactDepth, end: contactDepth, icon: Mail },
+]
 
 function App() {
   const [depth, setDepth] = useState(0)
@@ -71,10 +95,10 @@ function App() {
     const move = (amount) => {
       updateTargetDepth(targetDepth.current + amount)
     }
-    const onWheel = (event) => { move(event.deltaY < 0 ? 0.18 : -0.18) }
+    const onWheel = (event) => { move(event.deltaY > 0 ? 0.18 : -0.18) }
     const onKeyDown = (event) => {
-      if (event.key === 'ArrowUp' || event.key === 'PageUp') move(1)
-      if (event.key === 'ArrowDown' || event.key === 'PageDown') move(-1)
+      if (event.key === 'ArrowUp' || event.key === 'PageUp') move(-1)
+      if (event.key === 'ArrowDown' || event.key === 'PageDown') move(1)
       if (event.key === 'Home') updateTargetDepth(0)
       if (event.key === 'End') updateTargetDepth(sections.length - 1)
     }
@@ -88,7 +112,7 @@ function App() {
   const onPointerUp = (event) => {
     if (dragStart.current === null) return
     const distance = dragStart.current - event.clientY
-    if (Math.abs(distance) > 12) updateTargetDepth(targetDepth.current + distance / 170)
+    if (Math.abs(distance) > 12) updateTargetDepth(targetDepth.current - distance / 170)
     dragStart.current = null
   }
 
@@ -101,27 +125,39 @@ function App() {
 
       <div className="progress-track" aria-hidden="true"><div style={{ height: `${(progressDepth / (sections.length - 1)) * 100}%` }} /></div>
       <nav className="section-nav" aria-label="Portfolio sections">
-        {sections.map((section, index) => <button key={section} className={focusedDepth === index ? 'active' : ''} onClick={() => jumpTo(index)} aria-label={`Go to ${section}`}><span>{String(index + 1).padStart(2, '0')}</span>{section}</button>)}
+        {navSections.map((section, index) => {
+          const Icon = section.icon
+          return (
+            <button key={section.label} className={focusedDepth >= section.start && focusedDepth <= section.end ? 'active' : ''} onClick={() => jumpTo(section.start)} aria-label={`Go to ${section.label}`}>
+              <Icon className="nav-icon" aria-hidden="true" />
+              <span>{String(index + 1).padStart(2, '0')}</span>
+              {section.label}
+            </button>
+          )
+        })}
       </nav>
 
       <div className="scene" aria-live="polite">
         <section className="layer profile-layer" style={layerStyle(depth, 0)} aria-hidden={focusedDepth !== 0}>
-          <div className="profile-copy"><div className="profile-identity"><p className="eyebrow">01 / Profile</p><h1>{portfolioData.name.split(' ')[0]} <em>{portfolioData.name.split(' ').slice(1).join(' ')}</em></h1><p className="role">{portfolioData.role}</p></div><p className="intro">{portfolioData.intro}</p><p className="bio">{portfolioData.bio}</p><div className={`interaction-hint${focusedDepth === 0 ? '' : ' is-hidden'}`}><span className="hint-mouse"><MouseLeft /></span><span>Scroll up to zoom in</span></div></div><img className="profile-image" src={portfolioData.photo} alt={portfolioData.name} />
+          <div className="profile-copy"><div className="profile-identity"><p className="eyebrow">01 / Profile</p><h1>{portfolioData.name.split(' ')[0]} <em>{portfolioData.name.split(' ').slice(1).join(' ')}</em></h1><p className="role">{portfolioData.role}</p></div><p className="intro">{portfolioData.intro}</p><p className="bio">{portfolioData.bio}</p><a className="cv-download" href={cv} download="Patrick C. Lambino.pdf"><span>Download CV</span><Download aria-hidden="true" /></a><div className={`interaction-hint${focusedDepth === 0 ? '' : ' is-hidden'}`}><span className="hint-mouse"><MouseLeft /></span><span>Scroll down to next section</span></div></div><img className="profile-image" src={portfolioData.photo} alt={portfolioData.name} />
         </section>
 
         {portfolioData.projects.map((project, index) => <section className="layer projects-layer" style={layerStyle(depth, projectStartDepth + index)} aria-hidden={focusedDepth !== projectStartDepth + index} key={project.title}>
-          <div className="section-heading"><p className="eyebrow">02 / Selected work</p><h2>Things I&apos;ve <em>made.</em></h2><p>Product thinking, shipped into the real world.</p></div>
+          <div className="section-heading"><p className="eyebrow">02 / Recent works</p><h2>Things I&apos;ve <em>made.</em></h2><p>Product thinking, shipped into the real world.</p></div>
           <div className="project-card"><img src={project.image} alt="" /><div className="project-detail"><span className="project-count">{String(index + 1).padStart(2, '0')} / {String(portfolioData.projects.length).padStart(2, '0')}</span><h3>{project.title}</h3><p>{project.description}</p><div className="tag-row">{project.tags.map((tag) => <span key={tag}>{tag}</span>)}</div></div></div>
         </section>)}
 
-        <section className="layer skills-layer" style={layerStyle(depth, skillsDepth)} aria-hidden={focusedDepth !== skillsDepth}><div className="section-heading"><p className="eyebrow">03 / Capabilities</p><h2>Tools for <em>thoughtful</em> work.</h2></div><div className="skill-grid">{Object.entries(portfolioData.skills).map(([category, skills]) => <div className="skill-group" key={category}><span>0{Object.keys(portfolioData.skills).indexOf(category) + 1}</span><h3>{category}</h3>{skills.map((skill) => <p key={skill}>{skill}</p>)}</div>)}</div></section>
+        <section className="layer skills-layer" style={layerStyle(depth, skillsDepth)} aria-hidden={focusedDepth !== skillsDepth}><div className="section-heading"><p className="eyebrow">03 / Skills & Tools</p><h2>Tools for <em>thoughtful</em> work.</h2></div><div className="skill-grid">{Object.entries(portfolioData.skills).map(([category, skills]) => <div className="skill-group" key={category}><span>0{Object.keys(portfolioData.skills).indexOf(category) + 1}</span><h3>{category}</h3>{skills.map((skill) => <p key={skill}>{skill}</p>)}</div>)}</div></section>
 
-        <section className="layer certificates-layer" style={layerStyle(depth, certificatesDepth)} aria-hidden={focusedDepth !== certificatesDepth}><div className="section-heading"><p className="eyebrow">04 / Learning log</p><h2>Always in <em>progress.</em></h2></div><div className="certificate-list">{portfolioData.certificates.map((certificate, index) => <div className="certificate" key={certificate.name}><span>0{index + 1}</span><div><h3>{certificate.name}</h3><p>{certificate.issuer}</p></div><time>{certificate.date}</time><ExternalLink /></div>)}</div></section>
+        {portfolioData.certificates.map((certificate, index) => <section className="layer certificates-layer" style={layerStyle(depth, certificateStartDepth + index)} aria-hidden={focusedDepth !== certificateStartDepth + index} key={certificate.name}>
+          <div className="section-heading"><p className="eyebrow">04 / Certificates</p><h2>{certificate.name}</h2><p>{certificate.issuer} · {certificate.date}</p></div>
+          <div className="certificate-card"><img className="certificate-preview" src={certificate.image} alt={certificate.name} /></div>
+        </section>)}
 
         <section className="layer contact-layer" style={layerStyle(depth, contactDepth)} aria-hidden={focusedDepth !== contactDepth}><div className="contact-content"><p className="eyebrow">05 / Contact</p><h2>Let&apos;s make something <em>useful.</em></h2><p>Have a project, a question, or a good problem to untangle?</p><a className="email-link" href={`mailto:${portfolioData.contact.email}`}>{portfolioData.contact.email}<Mail /></a><div className="social-links"><a href={portfolioData.contact.github} target="_blank" rel="noreferrer"><Link /> GitHub</a><a href={portfolioData.contact.linkedin} target="_blank" rel="noreferrer"><Link /> LinkedIn</a></div></div></section>
       </div>
 
-      <footer>© {new Date().getFullYear()} {portfolioData.name} <span>Built with curiosity</span></footer>
+      <footer>© {new Date().getFullYear()} {portfolioData.name}</footer>
     </main>
   )
 }
