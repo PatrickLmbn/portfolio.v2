@@ -28,7 +28,7 @@ app.post('/contact/send-email', async (req, res) => {
         await resend.emails.send({
             from: "lambino.parick.competente@gmail.com",
             to: email,
-            subject: 'Hello from Resend!',
+            subject: 'Portfolio Message',
             html: `<p>Hello ${name},</p><p>${message}</p>`,
         })
         res.status(200).json({ message: 'Email sent successfully!' })
