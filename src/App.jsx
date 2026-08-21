@@ -28,7 +28,7 @@ const portfolioData = {
   photo: profile,
   projects: [
     { title: 'Armonyxfitness', description: 'Gym management for registrations, attendance, and subscriptions across four branches.', image: armonyx, tags: ['PHP', 'CodeIgniter', 'MySQL', 'AWS'] },
-    { title: 'BuildXDesigner', description: 'A visual website builder with integrated data, email, and payment systems.', image: buildx, tags: ['React', 'TypeScript', 'Node.js', 'AWS', 'Linux Server (Self-Hosted)', 'Vercel', 'Supabase', 'Paymongo', 'Resend', 'DuckDNS', 'OpenAI'] },
+    { title: 'BuildXDesigner', description: 'A visual website builder with integrated database, emailing system, and payment systems.', image: buildx, tags: ['React', 'TypeScript', 'Node.js', 'AWS', 'Linux Server (Self-Hosted)', 'Vercel', 'Supabase', 'Paymongo', 'Resend', 'DuckDNS', 'OpenAI'] },
     { title: 'Issue Report Management System', description: 'Centralized ticketing that reduced issue resolution time by 40 percent.', image: irms, tags: ['PHP', 'JavaScript', 'Ably', 'AWS'] },
     { title: 'OneShot', description: 'A scheduling tool for photobooth businesses to manage bookings and coordination.', image: oneshot, tags: ['React', 'Express', 'Supabase', 'Paymongo'] },
     { title: 'Prism', description: 'A browser extension for clearer, more confident writing in real time.', image: prism, tags: ['JavaScript', 'OpenAI', 'Chrome API'] },
