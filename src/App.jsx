@@ -105,16 +105,30 @@ function App() {
     return delta > 0 ? layer.scrollTop < maxScroll - 1 : layer.scrollTop > 1
   }
 
-  const handleContactSubmit = (event) => {
+  const handleContactSubmit = async (event) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    const name = formData.get('name')
-    const email = formData.get('email')
-    const message = formData.get('message')
-    const subject = `Portfolio inquiry from ${name}`
-    const body = `Name: ${name}\nEmail: ${email}\n\n${message}`
-    window.location.href = `mailto:${portfolioData.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
-    setContactStatus('Opening your email app...')
+    
+    await fetch('http://localhost:3000/contact/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: formData.get('name'),
+        email: formData.get('email'),
+        message: formData.get('message'),
+      }),
+    })
+    .then((response) => {
+      if (response.ok) {
+        setContactStatus('Email prepared successfully! Please check your email client.')
+        event.currentTarget.reset()
+      } else {
+        setContactStatus('Failed to prepare email. Please try again later.')
+      }
+    })
+    .catch(() => {
+      setContactStatus('An error occurred while preparing the email. Please try again later.')
+    })
   }
 
   useEffect(() => {
@@ -192,6 +206,7 @@ function App() {
     if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
   const onPointerCancel = () => { dragStart.current = null }
+
 
   return (
     <main className="zoom-app" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
