@@ -56,11 +56,11 @@ const skillsDepth = projectStartDepth + portfolioData.projects.length
 const certificateStartDepth = skillsDepth + 1
 const contactDepth = certificateStartDepth + portfolioData.certificates.length
 const navSections = [
-  { label: 'Profile', start: 0, end: 0, icon: Home },
-  { label: 'Recent Works', start: projectStartDepth, end: skillsDepth - 1, icon: BriefcaseBusiness },
-  { label: 'Skills & Tools', start: skillsDepth, end: skillsDepth, icon: Wrench },
-  { label: 'Certificates', start: certificateStartDepth, end: contactDepth - 1, icon: Award },
-  { label: 'Contact', start: contactDepth, end: contactDepth, icon: Mail },
+  { label: 'Profile', mobileLabel: 'Profile', start: 0, end: 0, icon: Home },
+  { label: 'Recent Works', mobileLabel: 'Works', start: projectStartDepth, end: skillsDepth - 1, icon: BriefcaseBusiness },
+  { label: 'Skills & Tools', mobileLabel: 'Skills', start: skillsDepth, end: skillsDepth, icon: Wrench },
+  { label: 'Certificates', mobileLabel: 'Certs', start: certificateStartDepth, end: contactDepth - 1, icon: Award },
+  { label: 'Contact', mobileLabel: 'Contact', start: contactDepth, end: contactDepth, icon: Mail },
 ]
 
 function App() {
@@ -108,19 +108,29 @@ function App() {
   }, [])
 
   const jumpTo = (index) => updateTargetDepth(index + Math.round((targetDepth.current - index) / sections.length) * sections.length)
-  const onPointerDown = (event) => { dragStart.current = event.clientY }
+  const onPointerDown = (event) => {
+    if (event.pointerType === 'touch') event.currentTarget.setPointerCapture(event.pointerId)
+    dragStart.current = { id: event.pointerId, y: event.clientY, pointerType: event.pointerType }
+  }
   const onPointerUp = (event) => {
-    if (dragStart.current === null) return
-    const distance = dragStart.current - event.clientY
+    if (dragStart.current === null || dragStart.current.id !== event.pointerId) return
+    const distance = dragStart.current.y - event.clientY
     if (Math.abs(distance) > 12) {
-      const direction = event.pointerType === 'touch' ? 1 : -1
-      updateTargetDepth(targetDepth.current + direction * distance / 170)
+      if (dragStart.current.pointerType === 'touch') {
+        const direction = distance > 0 ? 1 : -1
+        const sectionCount = Math.max(1, Math.round(Math.abs(distance) / 170))
+        updateTargetDepth(targetDepth.current + direction * sectionCount)
+      } else {
+        updateTargetDepth(targetDepth.current - distance / 170)
+      }
     }
     dragStart.current = null
+    if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
   }
+  const onPointerCancel = () => { dragStart.current = null }
 
   return (
-    <main className="zoom-app" onPointerDown={onPointerDown} onPointerUp={onPointerUp}>
+    <main className="zoom-app" onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
       <header className="site-header">
         <button className="wordmark" onClick={() => jumpTo(0)} aria-label="Jump to profile">PL<span>.</span></button>
         <div className="depth-readout"><span>Now viewing</span><strong>{String(focusedDepth + 1).padStart(2, '0')} / {String(sections.length).padStart(2, '0')} · {sections[focusedDepth]}</strong></div>
@@ -134,7 +144,8 @@ function App() {
             <button key={section.label} className={focusedDepth >= section.start && focusedDepth <= section.end ? 'active' : ''} onClick={() => jumpTo(section.start)} aria-label={`Go to ${section.label}`}>
               <Icon className="nav-icon" aria-hidden="true" />
               <span>{String(index + 1).padStart(2, '0')}</span>
-              {section.label}
+              <span className="nav-label">{section.label}</span>
+              <span className="mobile-nav-label">{section.mobileLabel}</span>
             </button>
           )
         })}
