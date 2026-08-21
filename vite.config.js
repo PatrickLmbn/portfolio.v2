@@ -9,6 +9,6 @@ export default defineConfig({
     proxy: {
       '/contact': 'http://localhost:3000',
     },
-    allowedHosts: ['localhost', 'resend.patricklmbn.online, patricklmbn.online'],
+    allowedHosts: ['localhost', 'resend.patricklmbn.online', 'patricklmbn.online'],
   },
 })
