@@ -168,7 +168,7 @@ function App() {
           <div className="certificate-card"><img className="certificate-preview" src={certificate.image} alt={certificate.name} /></div>
         </section>)}
 
-        <section className="layer contact-layer" style={layerStyle(depth, contactDepth)} aria-hidden={focusedDepth !== contactDepth}><div className="contact-content"><p className="eyebrow">05 / Contact</p><h2>Let&apos;s make something <em>useful.</em></h2><p>Have a project, a question, or a good problem to untangle?</p><a className="email-link" href={`mailto:${portfolioData.contact.email}`}>{portfolioData.contact.email}<Mail /></a><div className="social-links"><a href={portfolioData.contact.github} target="_blank" rel="noreferrer"><Link /> GitHub</a><a href={portfolioData.contact.linkedin} target="_blank" rel="noreferrer"><Link /> LinkedIn</a></div></div></section>
+        <section className="layer contact-layer" style={layerStyle(depth, contactDepth)} aria-hidden={focusedDepth !== contactDepth}><div className="contact-content"><p className="eyebrow">05 / Contact</p><h2>Let&apos;s <em>connect</em> and make something <em>useful.</em></h2><p>Have a project, a question, or a good problem to untangle?</p><a className="email-link" href={`mailto:${portfolioData.contact.email}`}>{portfolioData.contact.email}<Mail /></a><div className="social-links"><a href={portfolioData.contact.github} target="_blank" rel="noreferrer"><Link /> GitHub</a><a href={portfolioData.contact.linkedin} target="_blank" rel="noreferrer"><Link /> LinkedIn</a></div></div></section>
       </div>
 
       <footer>© {new Date().getFullYear()} {portfolioData.name}</footer>
