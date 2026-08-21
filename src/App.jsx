@@ -20,7 +20,7 @@ import dataScienceImage from './assets/certificates/data-science.png'
 import modernAiImage from './assets/certificates/modern-ai.png'
 import networkingBasicsImage from './assets/certificates/networking-basics.png'
 
-const apiUrl = import.meta.env.VITE_API_URL || 'https://patricklmbn.online'
+const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? 'http://localhost:3000' : 'https://resend.patricklmbn.online')
 
 const portfolioData = {
   name: 'Patrick Lambino',

@@ -10,9 +10,22 @@ dotenv.config({ path: path.join(backendDirectory, '.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3000
-const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
+const allowedOrigins = (process.env.FRONTEND_ORIGIN || 'http://localhost:5173')
+    .split(',')
+    .map((origin) => origin.trim())
+    .filter(Boolean)
 
-app.use(cors({ origin: frontendOrigin }))
+const corsOptions = {
+    origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true)
+            return
+        }
+        callback(new Error(`Origin ${origin} is not allowed by CORS`))
+    },
+}
+
+app.use(cors(corsOptions))
 app.use(express.json())
 
 const resend = new Resend(process.env.RESEND_API_KEY)
