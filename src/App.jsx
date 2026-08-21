@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Award, BriefcaseBusiness, Download, Home, Link, Mail, MouseLeft, Wrench } from 'lucide-react'
+import { Award, BriefcaseBusiness, Download, Home, Link, Mail, MouseLeft, Send, Wrench } from 'lucide-react'
 import profile from './assets/profiles/pfp.jpg'
 import cv from './assets/cv/Patrick C. Lambino.pdf'
 import armonyx from './assets/projects/armonyx.jpg'
@@ -66,8 +66,11 @@ const navSections = [
 function App() {
   const [depth, setDepth] = useState(0)
   const [targetDepthValue, setTargetDepthValue] = useState(0)
+  const [contactStatus, setContactStatus] = useState('')
   const targetDepth = useRef(0)
   const dragStart = useRef(null)
+  const arrivalDirection = useRef(1)
+  const lastFocusedDepth = useRef(0)
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -87,33 +90,94 @@ function App() {
   const progressDepth = Math.min(((targetDepthValue % sections.length) + sections.length) % sections.length, sections.length - 1)
 
   const updateTargetDepth = (value) => {
+    if (value !== targetDepth.current) arrivalDirection.current = value > targetDepth.current ? 1 : -1
     targetDepth.current = value
     setTargetDepthValue(value)
+  }
+
+  const getFocusedLayer = (event) => {
+    const layer = event.target.closest('.layer')
+    return layer && layer.getAttribute('aria-hidden') === 'false' ? layer : null
+  }
+  const canScrollLayer = (layer, delta) => {
+    if (!layer || layer.scrollHeight <= layer.clientHeight) return false
+    const maxScroll = layer.scrollHeight - layer.clientHeight
+    return delta > 0 ? layer.scrollTop < maxScroll - 1 : layer.scrollTop > 1
+  }
+
+  const handleContactSubmit = (event) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const name = formData.get('name')
+    const email = formData.get('email')
+    const message = formData.get('message')
+    const subject = `Portfolio inquiry from ${name}`
+    const body = `Name: ${name}\nEmail: ${email}\n\n${message}`
+    window.location.href = `mailto:${portfolioData.contact.email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    setContactStatus('Opening your email app...')
   }
 
   useEffect(() => {
     const move = (amount) => {
       updateTargetDepth(targetDepth.current + amount)
     }
-    const onWheel = (event) => { move(event.deltaY > 0 ? 0.18 : -0.18) }
+    const onWheel = (event) => {
+      const layer = getFocusedLayer(event)
+      if (window.innerWidth <= 700 && canScrollLayer(layer, event.deltaY)) return
+      if (window.innerWidth <= 700 && layer) event.preventDefault()
+      move(event.deltaY > 0 ? 0.18 : -0.18)
+    }
     const onKeyDown = (event) => {
       if (event.key === 'ArrowUp' || event.key === 'PageUp') move(-1)
       if (event.key === 'ArrowDown' || event.key === 'PageDown') move(1)
       if (event.key === 'Home') updateTargetDepth(0)
       if (event.key === 'End') updateTargetDepth(sections.length - 1)
     }
-    window.addEventListener('wheel', onWheel, { passive: true })
+    window.addEventListener('wheel', onWheel, { passive: false })
     window.addEventListener('keydown', onKeyDown)
     return () => { window.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', onKeyDown) }
   }, [])
 
+  useEffect(() => {
+    if (focusedDepth === lastFocusedDepth.current) return
+    const layer = document.querySelector('.layer[aria-hidden="false"]')
+    if (layer) layer.scrollTop = arrivalDirection.current > 0 ? 0 : layer.scrollHeight - layer.clientHeight
+    lastFocusedDepth.current = focusedDepth
+  }, [focusedDepth])
+
   const jumpTo = (index) => updateTargetDepth(index + Math.round((targetDepth.current - index) / sections.length) * sections.length)
   const onPointerDown = (event) => {
+    if (event.target.closest('form, input, textarea, button, a')) return
+    const layer = event.pointerType === 'touch' ? getFocusedLayer(event) : null
     if (event.pointerType === 'touch') event.currentTarget.setPointerCapture(event.pointerId)
-    dragStart.current = { id: event.pointerId, y: event.clientY, pointerType: event.pointerType }
+    dragStart.current = { id: event.pointerId, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, layer, cameraDistance: 0, startTarget: targetDepth.current }
+  }
+  const onPointerMove = (event) => {
+    const gesture = dragStart.current
+    if (!gesture || gesture.id !== event.pointerId || gesture.pointerType !== 'touch') return
+    const distance = gesture.lastY - event.clientY
+    gesture.lastY = event.clientY
+    if (!gesture.layer) {
+      gesture.cameraDistance += distance
+      updateTargetDepth(gesture.startTarget + gesture.cameraDistance / 170)
+      return
+    }
+    const maxScroll = Math.max(0, gesture.layer.scrollHeight - gesture.layer.clientHeight)
+    const previousScroll = gesture.layer.scrollTop
+    gesture.layer.scrollTop = Math.max(0, Math.min(maxScroll, previousScroll + distance))
+    const remainingDistance = distance - (gesture.layer.scrollTop - previousScroll)
+    if (remainingDistance) {
+      gesture.cameraDistance += remainingDistance
+      updateTargetDepth(gesture.startTarget + gesture.cameraDistance / 170)
+    }
   }
   const onPointerUp = (event) => {
     if (dragStart.current === null || dragStart.current.id !== event.pointerId) return
+    if (dragStart.current.pointerType === 'touch') {
+      dragStart.current = null
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId)
+      return
+    }
     const distance = dragStart.current.y - event.clientY
     if (Math.abs(distance) > 12) {
       if (dragStart.current.pointerType === 'touch') {
@@ -130,7 +194,7 @@ function App() {
   const onPointerCancel = () => { dragStart.current = null }
 
   return (
-    <main className="zoom-app" onPointerDown={onPointerDown} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
+    <main className="zoom-app" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
       <header className="site-header">
         <button className="wordmark" onClick={() => jumpTo(0)} aria-label="Jump to profile">PL<span>.</span></button>
         <div className="depth-readout"><span>Now viewing</span><strong>{String(focusedDepth + 1).padStart(2, '0')} / {String(sections.length).padStart(2, '0')} · {sections[focusedDepth]}</strong></div>
@@ -153,7 +217,7 @@ function App() {
 
       <div className="scene" aria-live="polite">
         <section className="layer profile-layer" style={layerStyle(depth, 0)} aria-hidden={focusedDepth !== 0}>
-          <div className="profile-copy"><div className="profile-identity"><p className="eyebrow">01 / Profile</p><h1>{portfolioData.name.split(' ')[0]} <em>{portfolioData.name.split(' ').slice(1).join(' ')}</em></h1><p className="role">{portfolioData.role}</p></div><p className="intro">{portfolioData.intro}</p><p className="bio">{portfolioData.bio}</p><a className="cv-download" href={cv} download="Patrick C. Lambino.pdf"><span>Download CV</span><Download aria-hidden="true" /></a><div className={`interaction-hint${focusedDepth === 0 ? '' : ' is-hidden'}`}><span className="hint-mouse"><MouseLeft /></span><span>Scroll down to next section</span></div></div><img className="profile-image" src={portfolioData.photo} alt={portfolioData.name} />
+          <div className="profile-copy"><div className="profile-identity"><p className="eyebrow">01 / Profile</p><h1>{portfolioData.name.split(' ')[0]} <em>{portfolioData.name.split(' ').slice(1).join(' ')}</em></h1><p className="role">{portfolioData.role}</p></div><p className="intro">{portfolioData.intro}</p><p className="bio">{portfolioData.bio}</p><a className="cv-download" href={cv} download="Patrick C. Lambino.pdf"><span>Download CV</span><Download aria-hidden="true" /></a><a className="profile-email" href={`mailto:${portfolioData.contact.email}`}><Mail aria-hidden="true" />{portfolioData.contact.email}</a><div className={`interaction-hint${focusedDepth === 0 ? '' : ' is-hidden'}`}><span className="hint-mouse"><MouseLeft /></span><span>Scroll down to next section</span></div></div><img className="profile-image" src={portfolioData.photo} alt={portfolioData.name} />
         </section>
 
         {portfolioData.projects.map((project, index) => <section className="layer projects-layer" style={layerStyle(depth, projectStartDepth + index)} aria-hidden={focusedDepth !== projectStartDepth + index} key={project.title}>
@@ -168,7 +232,21 @@ function App() {
           <div className="certificate-card"><img className="certificate-preview" src={certificate.image} alt={certificate.name} /></div>
         </section>)}
 
-        <section className="layer contact-layer" style={layerStyle(depth, contactDepth)} aria-hidden={focusedDepth !== contactDepth}><div className="contact-content"><p className="eyebrow">05 / Contact</p><h2>Let&apos;s <em>connect</em> and make something <em>useful.</em></h2><p>Have a project, a question, or a good problem to untangle?</p><a className="email-link" href={`mailto:${portfolioData.contact.email}`}>{portfolioData.contact.email}<Mail /></a><div className="social-links"><a href={portfolioData.contact.github} target="_blank" rel="noreferrer"><Link /> GitHub</a><a href={portfolioData.contact.linkedin} target="_blank" rel="noreferrer"><Link /> LinkedIn</a></div></div></section>
+        <section className="layer contact-layer" style={layerStyle(depth, contactDepth)} aria-hidden={focusedDepth !== contactDepth}>
+          <div className="contact-content">
+            <div className="contact-intro"><p className="eyebrow">05 / Contact</p><h2>Let&apos;s <em>connect</em> and make something <em>useful.</em></h2><p>Have a project, a question, or a good problem to untangle?</p><div className="social-links"><a href={portfolioData.contact.github} target="_blank" rel="noreferrer"><Link /> GitHub</a><a href={portfolioData.contact.linkedin} target="_blank" rel="noreferrer"><Link /> LinkedIn</a></div></div>
+            <form className="contact-form" onSubmit={handleContactSubmit}>
+              <label htmlFor="contact-name">Your name</label>
+              <input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Jane Smith" required />
+              <label htmlFor="contact-email">Email address</label>
+              <input id="contact-email" name="email" type="email" autoComplete="email" placeholder="jane@example.com" required />
+              <label htmlFor="contact-message">Message</label>
+              <textarea id="contact-message" name="message" rows="4" placeholder="Tell me a little about what you&apos;re working on..." required />
+              <button type="submit">Prepare email <Send aria-hidden="true" /></button>
+              <p className="contact-status" role="status" aria-live="polite">{contactStatus}</p>
+            </form>
+          </div>
+        </section>
       </div>
 
       <footer>© {new Date().getFullYear()} {portfolioData.name}</footer>
