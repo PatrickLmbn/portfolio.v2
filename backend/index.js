@@ -10,8 +10,9 @@ dotenv.config({ path: path.join(backendDirectory, '.env') })
 
 const app = express()
 const PORT = process.env.PORT || 3000
+const frontendOrigin = process.env.FRONTEND_ORIGIN || 'http://localhost:5173'
 
-app.use(cors())
+app.use(cors({ origin: frontendOrigin }))
 app.use(express.json())
 
 const resend = new Resend(process.env.RESEND_API_KEY)

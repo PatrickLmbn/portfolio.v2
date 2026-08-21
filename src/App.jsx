@@ -20,6 +20,8 @@ import dataScienceImage from './assets/certificates/data-science.png'
 import modernAiImage from './assets/certificates/modern-ai.png'
 import networkingBasicsImage from './assets/certificates/networking-basics.png'
 
+const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
 const portfolioData = {
   name: 'Patrick Lambino',
   role: 'Software developer',
@@ -109,7 +111,7 @@ function App() {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     
-    await fetch('http://localhost:3000/contact/send-email', {
+    await fetch(`${apiUrl}/contact/send-email`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
