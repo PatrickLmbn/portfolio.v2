@@ -147,10 +147,10 @@ function App() {
 
   const jumpTo = (index) => updateTargetDepth(index + Math.round((targetDepth.current - index) / sections.length) * sections.length)
   const onPointerDown = (event) => {
-    if (event.target.closest('form, input, textarea, button, a')) return
     const layer = event.pointerType === 'touch' ? getFocusedLayer(event) : null
+    const isFormInteraction = Boolean(event.target.closest('form, input, textarea'))
     if (event.pointerType === 'touch') event.currentTarget.setPointerCapture(event.pointerId)
-    dragStart.current = { id: event.pointerId, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, layer, cameraDistance: 0, startTarget: targetDepth.current }
+    dragStart.current = { id: event.pointerId, y: event.clientY, lastY: event.clientY, pointerType: event.pointerType, layer, isFormInteraction, cameraDistance: 0, startTarget: targetDepth.current }
   }
   const onPointerMove = (event) => {
     const gesture = dragStart.current
