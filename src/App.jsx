@@ -69,10 +69,12 @@ function App() {
   const [depth, setDepth] = useState(0)
   const [targetDepthValue, setTargetDepthValue] = useState(0)
   const [contactStatus, setContactStatus] = useState('')
+  const [isNavSwitching, setIsNavSwitching] = useState(false)
   const targetDepth = useRef(0)
   const dragStart = useRef(null)
   const arrivalDirection = useRef(1)
   const lastFocusedDepth = useRef(0)
+  const navTransitionFrame = useRef(null)
 
   useEffect(() => {
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -91,10 +93,58 @@ function App() {
   const focusedDepth = ((Math.round(depth) % sections.length) + sections.length) % sections.length
   const progressDepth = Math.min(((targetDepthValue % sections.length) + sections.length) % sections.length, sections.length - 1)
 
+  const stopNavSwitching = () => {
+    if (navTransitionFrame.current) {
+      cancelAnimationFrame(navTransitionFrame.current)
+      navTransitionFrame.current = null
+    }
+    setIsNavSwitching(false)
+  }
+
   const updateTargetDepth = (value) => {
     if (value !== targetDepth.current) arrivalDirection.current = value > targetDepth.current ? 1 : -1
     targetDepth.current = value
     setTargetDepthValue(value)
+  }
+
+  const smoothJumpTo = (index) => {
+    const destination = index + Math.round((targetDepth.current - index) / sections.length) * sections.length
+    const start = targetDepth.current
+    const distance = destination - start
+
+    if (Math.abs(distance) < 0.001) {
+      updateTargetDepth(destination)
+      return
+    }
+
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (reducedMotion) {
+      updateTargetDepth(destination)
+      return
+    }
+
+    stopNavSwitching()
+    setIsNavSwitching(true)
+
+    const duration = Math.min(900, 380 + Math.abs(distance) * 140)
+    const startTime = performance.now()
+    const easeInOutCubic = (t) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
+
+    const step = (now) => {
+      const progress = Math.min((now - startTime) / duration, 1)
+      updateTargetDepth(start + distance * easeInOutCubic(progress))
+
+      if (progress < 1) {
+        navTransitionFrame.current = requestAnimationFrame(step)
+        return
+      }
+
+      updateTargetDepth(destination)
+      navTransitionFrame.current = null
+      setIsNavSwitching(false)
+    }
+
+    navTransitionFrame.current = requestAnimationFrame(step)
   }
 
   const getFocusedLayer = (event) => {
@@ -135,6 +185,7 @@ function App() {
 
   useEffect(() => {
     const move = (amount) => {
+      stopNavSwitching()
       updateTargetDepth(targetDepth.current + amount)
     }
     const onWheel = (event) => {
@@ -154,6 +205,8 @@ function App() {
     return () => { window.removeEventListener('wheel', onWheel); window.removeEventListener('keydown', onKeyDown) }
   }, [])
 
+  useEffect(() => () => stopNavSwitching(), [])
+
   useEffect(() => {
     if (focusedDepth === lastFocusedDepth.current) return
     const layer = document.querySelector('.layer[aria-hidden="false"]')
@@ -161,8 +214,9 @@ function App() {
     lastFocusedDepth.current = focusedDepth
   }, [focusedDepth])
 
-  const jumpTo = (index) => updateTargetDepth(index + Math.round((targetDepth.current - index) / sections.length) * sections.length)
+  const jumpTo = (index) => smoothJumpTo(index)
   const onPointerDown = (event) => {
+    stopNavSwitching()
     const layer = event.pointerType === 'touch' ? getFocusedLayer(event) : null
     const isFormInteraction = Boolean(event.target.closest('form, input, textarea'))
     if (event.pointerType === 'touch') event.currentTarget.setPointerCapture(event.pointerId)
@@ -211,7 +265,7 @@ function App() {
 
 
   return (
-    <main className="zoom-app" onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
+    <main className={`zoom-app${isNavSwitching ? ' is-nav-switching' : ''}`} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onPointerUp={onPointerUp} onPointerCancel={onPointerCancel}>
       <header className="site-header">
         <button className="wordmark" onClick={() => jumpTo(0)} aria-label="Jump to profile">PL<span>.</span></button>
         <div className="depth-readout"><span>Now viewing</span><strong>{String(focusedDepth + 1).padStart(2, '0')} / {String(sections.length).padStart(2, '0')} · {sections[focusedDepth]}</strong></div>
@@ -256,7 +310,7 @@ function App() {
               <div className="contact-field"><label htmlFor="contact-name">Your name</label><input id="contact-name" name="name" type="text" autoComplete="name" placeholder="Jane Smith" required /></div>
               <div className="contact-field"><label htmlFor="contact-email">Email address</label><input id="contact-email" name="email" type="email" autoComplete="email" placeholder="jane@example.com" required /></div>
               <div className="contact-field"><label htmlFor="contact-message">Message</label><textarea id="contact-message" name="message" rows="4" placeholder="Tell me a little about what you&apos;re working on..." required /></div>
-              <button type="submit">Prepare email <Send aria-hidden="true" /></button>
+              <button type="submit">Send email <Send aria-hidden="true" /></button>
               <p className="contact-status" role="status" aria-live="polite">{contactStatus}</p>
             </form>
           </div>
